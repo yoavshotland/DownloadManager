@@ -22,24 +22,25 @@ public class Downloader implements Runnable {
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 		}
-        this.filePath = url.substring(url.lastIndexOf('/') + 1)+""+count++;        
+        this.filePath = url.substring(url.lastIndexOf('/') + 1);        
         this.start = start;
         this.end = end;
         this.queue = queue;
     }
 
-    public int download(){
+    @Override
+    public void run() {
         try{
         	HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    
-	        BufferedInputStream in = new BufferedInputStream(connection.getInputStream());
+	        String range = start + "-" + end;
+	        connection.setRequestMethod("GET");
+        	connection.setRequestProperty("Range", "bytes=" + range);
+        	connection.connect();	      
 	        RandomAccessFile output = new RandomAccessFile(filePath, "rw");
 	        System.out.println("thread number- "+ count +"  : "+start + "     " + end);
-	        String range = 0 + "-" + end;
-	        connection.setRequestProperty("Range", "bytes=" + range);
-	        System.out.println("thread number- "+ count +"  : "+start + "     " + end);
-	        connection.connect();
-	        output.seek(0);
+	        BufferedInputStream in = new BufferedInputStream(connection.getInputStream());
+
+	        output.seek(start);
 	        byte[] input = new byte[BUFFER_SIZE];
 	        int check = 0;
 	        while(true){
@@ -52,14 +53,11 @@ public class Downloader implements Runnable {
 	        queue.put(output);
         }
         catch (Exception e){
-        	
+        	e.printStackTrace();
         }
 
-        return 1;
+        
     }
 
-    @Override
-    public void run() {
-        download();
     }
-}
+

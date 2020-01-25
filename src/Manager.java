@@ -26,8 +26,10 @@ public class Manager {
 	                split = Integer.parseInt(args[1]);
 	            ExecutorService pool = Executors.newFixedThreadPool(split);
 	            int partSize = size / split;
-	            for(int i = 1; i <= split; i++)
-	                pool.submit(new Downloader(url, partSize*(i-1), (partSize*i)-1, queue));
+	            for(int i = 1; i <= split; i++) {
+	                System.out.println("start of range : " + (partSize*(i-1)) + " until : "+ ((partSize*i)-1));
+	            	pool.submit(new Downloader(url, (partSize*(i-1)), ((partSize*i)-1), queue));
+	            }
 	            pool.shutdown();
         	}
         	catch(Exception e){}
