@@ -6,6 +6,9 @@ import java.nio.*;
 
 public class Downloader implements Runnable {
 
+	
+	
+	// check what should be done concerning the "too small files"
 	private static int BUFFER_SIZE = 1024;
 	private static int count = 0;
     private String filePath;
@@ -31,6 +34,10 @@ public class Downloader implements Runnable {
     @Override
     public void run() {
         try{
+        	/*
+        	 * We set up the connection and the get request
+        	 * we start download with the BUFFER_SIZE mentioned
+        	 */
         	HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 	        String range = start + "-" + end;
 	        connection.setRequestMethod("GET");
