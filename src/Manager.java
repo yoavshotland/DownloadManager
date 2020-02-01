@@ -4,12 +4,13 @@ import java.util.*;
 import java.util.concurrent.*;
 public class Manager {
 	private static int num_of_chunks = 10000;
-    public static void main(String[] args){
-
+	private ExecutorService pool;
+	
+    public void downloadAll(String[] args){
         String url = args[0];
         File file = new File (url);
-        //String fileName = url.substring(url.lastIndexOf('/') + 1);        
-        String fileName = "che.avi";
+        String fileName = args[0].replaceAll(".list", "");
+        fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
         LinkedBlockingQueue<Chunk> queue = new LinkedBlockingQueue<>();
         //×
         // ADD TO METADATA
@@ -23,9 +24,9 @@ public class Manager {
          */
         
       
-        MetaData metadata = new MetaData(num_of_chunks, fileName);
-        Writer writer = new Writer(queue, metadata, fileName, num_of_chunks);
-        Thread write = new Thread(writer);
+        //MetaData metadata = new MetaData(num_of_chunks, fileName);
+        WriterManager writer = new WriterManager(fileName, num_of_chunks,this);
+        Thread write = writer.createThread(queue);
         write.start();
         if(file.exists()) {
             ArrayList<String> urls = new ArrayList<>();
@@ -97,7 +98,7 @@ public class Manager {
         }
     }
          
-    public static void downloadFrom(int split, int start, int partSize ,String url, boolean isLast, int remain, int sizeOfChunk, LinkedBlockingQueue<Chunk> queue) {
+    public void downloadFrom(int split, int start, int partSize ,String url, boolean isLast, int remain, int sizeOfChunk, LinkedBlockingQueue<Chunk> queue) {
     	if(split == 0) return;
     	
     	/*
@@ -114,5 +115,16 @@ public class Manager {
     	}
     	catch(Exception e){}
     	}
-    }
     
+
+    public synchronized void kill(Exception e) {
+	    System.err.println(e.getMessage());
+	    System.err.println("Download failed.");
+	    if (this.pool != null) {
+	        this.pool.shutdownNow(); // Ending all threads
+	    }
+	    // The tasks ignore the interrupts that create because of shutDownNow.
+	    System.exit(1);
+	}
+
+}
